@@ -1,0 +1,65 @@
+# workspace-workflow-builder
+
+> Skill for building workspace workflows from scratch or refactoring existing
+> ones. Scaffolds project directory structure and AI agent workflow files
+> (CLAUDE.md, AGENTS.md, GEMINI.md, MEMORY.md, .workflow-references/).
+> Type C skill (YAML frontmatter + body).
+
+## Key entry points
+
+- SKILL.md: Skill definition (trigger patterns, compatibility, seven-phase procedure, Phase 0-6)
+
+## Structure
+
+- references/: Companion files loaded on demand during skill execution
+- tests/: test_user_level_snippet.sh, the validation snippet's fixture suite; test_elicitation_consumers.sh, every question has a reader (both declared in CHECKS)
+- scripts/: build-single-file.sh, which rebuilds dist/ from SKILL.md and references/
+- dist/: Pre-built single-file distribution for environments without multi-file support
+- README.md: Package overview and prompt design spec, with install steps
+- LICENSE: MIT
+
+## How it works
+
+SKILL.md contains trigger patterns (build workspace, scaffold project,
+set up AI agent files), compatibility requirements (git), and a
+seven-phase procedure:
+
+- Phase 0: Environment pre-check (sandbox detection, tool availability, risk tiers)
+- Phase 1: Mode detection (bootstrap a new workspace vs. refactor an existing one vs. Mode C, only the user-level instruction files)
+- Phase 2: Existing structure capture (refactor mode only)
+- Phase 3: Requirements elicitation (preset, bilingual question bank: Track A A1-A6, Track B B0-B10, optional U1-U2; confirmation gate)
+- Phase 4: Plan document generation (Category A project files, Category B agent files, Category C user-level instruction files only when U1 != A; user confirmation required)
+- Phase 5: Execution (risk-tiered file creation, modification, deletion; sandbox degradation)
+- Phase 6: Sync consistency enforcement (shared content kept identical across agent files)
+
+## File manifest
+
+| File | Purpose |
+|------|---------|
+| SKILL.md | Skill entry -- triggers, procedure, quality gates |
+| references/environment-setup.md | Environment detection and setup procedures |
+| references/elicitation-questions.md | Phase 3 bilingual question bank, Track A (A1-A6) |
+| references/elicitation-track-b.md | Phase 3 bilingual question bank, Track B (B0-B10), including the B0 generation matrix |
+| references/project-file-templates.md | Category A project file templates |
+| references/agent-file-templates.md | Category B core: generation rules, block assembly, Method Y, Shared Step Fragments |
+| references/entry-file-templates.md | Entry-file body written byte-identically to CLAUDE.md / AGENTS.md / GEMINI.md |
+| references/memory-template.md | MEMORY.md template (four categories, Write Rules, Cleanup Policy) |
+| references/change-logging-template.md | Change Logging Rule block, injected when A5 = C |
+| references/phase-2-branch-templates.md | Index of the six PHASE 2 branch templates; routes A1 to one branch file |
+| references/phase-2-branch-s.md | PHASE 2 template, Branch S (Engineering) |
+| references/phase-2-branch-e.md | PHASE 2 template, Branch E (Data & Experiment) |
+| references/phase-2-branch-p.md | PHASE 2 template, Branch P (Prompt & Agent Engineering) |
+| references/phase-2-branch-d.md | PHASE 2 template, Branch D (Document & Research) |
+| references/phase-2-branch-c.md | PHASE 2 template, Branch C (Content Operations) |
+| references/phase-2-branch-o.md | PHASE 2 template, Branch O (Ops & Infrastructure) |
+| references/git-workflow-template.md | GIT_WORKFLOW.md template (Solo + Team) |
+| references/git-workflow-team.md | GIT_WORKFLOW.md template, Part C: Team mode |
+| references/visual-presentation.md | Visual presentation rules, only when deliverables include visual output |
+| references/execution-steps.md | Phase 5 execution procedures and the execution summary |
+| references/print-output.md | Press-file rules, only when a deliverable is a PDF for a print shop |
+| references/user-level-files.md | Home-folder instruction files (U1-U2; Claude, Codex, Gemini, Other) and Mode C (Home only): managed personal-defaults block, Home-tier write, resolution and validation snippets |
+| CHECKS | Checks run by check-artifact.sh A11, one command per line |
+| tests/test_user_level_snippet.sh | Runs the shipped validation snippet on 16 fixtures in a temp dir, must-fail cases included |
+| tests/test_elicitation_consumers.sh | Fails on any question in the two question banks that no other reference file reads; 4 must-fail fixtures |
+| scripts/build-single-file.sh | Rebuilds the single-file distribution (one appendix per reference module) |
+| dist/SKILL_workspace_workflow_builder_single.md | Single-file distribution build |

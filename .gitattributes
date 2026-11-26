@@ -1,0 +1,8 @@
+# Every text file stays LF in every checkout, Windows included. The skill
+# carries shell snippets, and a CRLF copy zipped and uploaded fails to source
+# on Linux ($'\r': command not found).
+* text=auto eol=lf
+
+# Keep this file out of the ZIP the README's install step builds with
+# git archive, so the ZIP holds exactly the skill package.
+.gitattributes export-ignore

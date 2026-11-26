@@ -1,0 +1,5 @@
+# Commands this package's checks run, one per line, from the package root.
+# Read by check-artifact.sh A11. Each must exit 0. A command whose tool is not
+# on PATH is reported BLOCKED, not failed.
+sh tests/test_user_level_snippet.sh
+sh tests/test_elicitation_consumers.sh
