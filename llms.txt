@@ -27,7 +27,7 @@ seven-phase procedure:
 - Phase 0: Environment pre-check (sandbox detection, tool availability, risk tiers)
 - Phase 1: Mode detection (bootstrap a new workspace vs. refactor an existing one vs. Mode C, only the user-level instruction files)
 - Phase 2: Existing structure capture (refactor mode only)
-- Phase 3: Requirements elicitation (preset, bilingual question bank: Track A A1-A6, Track B B0-B10, optional U1-U2; confirmation gate)
+- Phase 3: Requirements elicitation (preset, bilingual question bank: Track A A1-A6, Track B B0-B10, optional U1-U3; confirmation gate)
 - Phase 4: Plan document generation (Category A project files, Category B agent files, Category C user-level instruction files only when U1 != A; user confirmation required)
 - Phase 5: Execution (risk-tiered file creation, modification, deletion; sandbox degradation)
 - Phase 6: Sync consistency enforcement (shared content kept identical across agent files)
@@ -57,9 +57,9 @@ seven-phase procedure:
 | references/visual-presentation.md | Visual presentation rules, only when deliverables include visual output |
 | references/execution-steps.md | Phase 5 execution procedures and the execution summary |
 | references/print-output.md | Press-file rules, only when a deliverable is a PDF for a print shop |
-| references/user-level-files.md | Home-folder instruction files (U1-U2; Claude, Codex, Gemini, Other) and Mode C (Home only): managed personal-defaults block, Home-tier write, resolution and validation snippets |
+| references/user-level-files.md | Home-folder instruction files (U1-U3; Claude, Codex, Gemini, Other) and Mode C (Home only): managed personal-defaults block with optional Decision Support (U3), Home-tier write, resolution and validation snippets |
 | CHECKS | Checks run by check-artifact.sh A11, one command per line |
 | tests/test_user_level_snippet.sh | Runs the shipped validation snippet on 16 fixtures in a temp dir, must-fail cases included |
-| tests/test_elicitation_consumers.sh | Fails on any question in the two question banks that no other reference file reads; 4 must-fail fixtures |
+| tests/test_elicitation_consumers.sh | Fails on any question in the two question banks that no other reference file reads, and on any add-on U question nothing outside its own Questions section reads; 6 fixtures |
 | scripts/build-single-file.sh | Rebuilds the single-file distribution (one appendix per reference module) |
 | dist/SKILL_workspace_workflow_builder_single.md | Single-file distribution build |

@@ -240,7 +240,7 @@ Once structure is captured, proceed to Phase 3.
 
 This is the core information-gathering gate. The full bilingual question bank
 (A1-A6, B0-B10) lives in `references/elicitation-questions.md` - read it on
-entering this phase. The add-on questions U1-U2 (user-level instruction files
+entering this phase. The add-on questions U1-U3 (user-level instruction files
 in the home folder) live in `references/user-level-files.md`; ask U1 right
 after B0, whatever B0 chose.
 
@@ -315,7 +315,8 @@ not skipped silently - its resolution appears in the confirmation summary.
 | A2 = A (solo) | CODEOWNERS / branch protection content | B6 capped at option B |
 | B0 = single agent | B4 | no Multi-Agent Coordination subsection |
 | B0 excludes Claude | B1 | no Claude-specific config |
-| U1 = A | U2 | no user-level instruction file |
+| U1 = A | U2, U3 | no user-level instruction file |
+| U3 = A | U3 follow-up | no Decision Support section in the personal-defaults block |
 | B2 = D (no memory) | B3, B9 | `MEMORY.md` not generated; B8 = B has no Decision Memory to log to -- ask: A or C |
 | B5 = A (no agent Git) | agent rows in Git responsibility tables | "Human only" everywhere |
 
@@ -341,6 +342,7 @@ Once the completion gate is met, display (mark preset defaults with `*`):
 ║ Agents:        <selected agents>                           ║
 ║ Files to gen:  <list of agent files>                       ║
 ║ User-level:    <none / user-level instruction file paths>  ║
+║ 2nd Opinion:   <U3: none / Round 1 / Rounds 1-2 / custom>  ║
 ║ Memory:        <strategy + categories>                     ║
 ║ Git-Agent:     <ownership map>                             ║
 ║ Failure:       <fallback strategy>                         ║

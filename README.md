@@ -85,10 +85,10 @@ skills/workspace-workflow-builder/
 |   +-- visual-presentation.md        # Appendix R: token + color + structure + display rules
 |   +-- execution-steps.md            # Appendix S: Phase 5 steps + command quick reference
 |   +-- print-output.md               # Appendix T: press-file font type, outlining, preflight
-|   +-- user-level-files.md           # Appendix U: home-folder instruction files (U1-U2, Mode C)
+|   +-- user-level-files.md           # Appendix U: home-folder instruction files (U1-U3, Mode C)
 +-- tests/
 |   +-- test_user_level_snippet.sh    # Rung O: runs the shipped resolution + validation snippets on 35 fixtures
-|   +-- test_elicitation_consumers.sh # Rung A: every question has a reader; 4 must-fail fixtures
+|   +-- test_elicitation_consumers.sh # Rung A: every question has a reader, U ones too; 6 fixtures
 +-- scripts/
 |   +-- build-single-file.sh          # Concatenates SKILL.md + all references into single-file edition
 +-- dist/
@@ -135,7 +135,8 @@ skills/workspace-workflow-builder/
 Every question below must have a reader: a template or step that turns its
 answer into output. `tests/test_elicitation_consumers.sh` fails on any
 question in the two banks that no other reference file names -- B4, B8 and
-B10 shipped unread until it existed. It proves presence only; whether each
+B10 shipped unread until it existed -- and on any add-on U question that
+nothing outside the Questions section of `user-level-files.md` names. It proves presence only; whether each
 option produces what it promises stays a J-check.
 
 ### Track A -- Project Context
@@ -175,6 +176,7 @@ question and has no option A.
 |----------|----------|---------|
 | U1 | User-level instruction file in the home folder | No / Yes, one or more of: Claude `~/.claude/CLAUDE.md`, Codex `$CODEX_HOME/AGENTS.md`, Gemini `~/.gemini/GEMINI.md` (Gemini CLI and Antigravity CLI), Other (runtime and path named by the user, written only if it is a plain Markdown file loaded whole) |
 | U2 | Personal-defaults content | Profile + communication / + cross-project habits / Custom |
+| U3 | Second opinion before a consequential decision | No / Round 1: blind sub-agent review / Rounds 1-2: + a model from another family / Custom |
 
 ### Preset Profiles
 
@@ -298,6 +300,7 @@ title.
 | User-level instruction files as an opt-in add-on carrying personal defaults only | A user-level instruction file loads in every project alongside each project file, and the runtime resolves a contradiction arbitrarily -- so it holds only what is true everywhere, and the project files stay complete without it | Copy the generic rules (Core Operating Rules, BD-1 to BD-6) home too (loads them twice per turn and counts toward the Codex 32 KiB cap) |
 | Mode C (Home only): the user-level files with no workspace build | The home file belongs to the machine, not to one project, so changing it should not need a workspace build. Rejected on 2026-11-24 for its trigger cost; adopted 2026-11-25 once the description had room (980 of 1024 characters) | A separate skill (would copy the ~27 KB module, two copies to keep in step); the add-on only (a personal-defaults change needs a full workspace run) |
 | Gemini as a verified target, `~/.gemini/GEMINI.md` | Gemini CLI and Antigravity CLI both read that file, so one target covers both; every fact is sourced (docs, and Gemini CLI's source for `GEMINI_CLI_HOME` and the memory tool) | Leave Gemini out (B0 offered it for project files while U1 did not); separate Gemini CLI and Antigravity targets (the same file twice) |
+| Decision Support as its own add-on question, U3, written runtime-neutrally in Rounds | One block goes into every target, so reviewer settings and Round 2 models are user-stated, each setting names its runtime, and each round carries a fallback line for a runtime that lacks the capability. "Round", not "tier": this package's tiers are risk tiers | A U2 option (U2 options are either/or; decision support pairs with any of them and has options of its own); the author's own wording with Claude Code settings and Codex named (wrong inside the Codex and Gemini files) |
 | Other runtimes: the user states the path, a write gate decides, an O-check proves it | The skill makes no network request, so it cannot look a runtime up; facts it cannot verify come from the user, labeled unverified, and only the runtime itself showing the block counts as proof. A file the runtime does not load whole (a settings screen, a frontmatter rules folder) gets the paste file instead | Write any path given (a settings screen or a frontmatter folder would silently ignore it); refuse other runtimes (the question that started this) |
 | The block goes before `## Gemini Added Memories` | Gemini CLI's older `save_memory` (read at v0.1.22 and v0.5.5) ends that section at the next `## ` line, so a block after the heading would get the next saved fact inside its markers, and a rerun would delete it | Append at the end as for other files (the failure above) |
 | A marked block, never a whole-file write | Users already keep their own text in these files; markers make a rerun replace its own block, and Claude Code strips the comment markers before loading | Overwrite the file (destroys user content); append without markers (a rerun duplicates the block) |
@@ -336,9 +339,10 @@ title.
   `GEMINI_CLI_HOME`. The skill asks, and the O-check settles each one.
 - An Other runtime's path and loading are user-stated and unverified until
   its O-check passes; the skill ships no facts for it and looks none up.
-- `tests/test_elicitation_consumers.sh` covers the two question banks only.
-  U1 and U2 live in `references/user-level-files.md`, which both asks and
-  reads them, so that test cannot see them.
+- Decision Support (U3) is checked as written, not as followed: an A-check
+  finds the section and a J-check holds its models and routes to the user's
+  answers, but no check proves an agent starts the blind reviewer on a real
+  decision. The reviewer settings and Round 2 routes are user-stated.
 - The single-file edition must be rebuilt manually after any change to
   `SKILL.md` or reference files (`sh scripts/build-single-file.sh`). This is
   no longer only a convention: `dist/` is tracked, and the dist-freshness
@@ -368,6 +372,17 @@ in seconds, and Step 3b re-composes after a failed check.
 | Each runtime loads its user-level file | O | BLOCKED (Requires User Verification) -- reproduction in Known Limitations |
 
 ---
+
+## Testing Summary -- Decision Support, U3 (2026-11-27)
+
+| Check | Rung | Result |
+|---|---|---|
+| `tests/test_elicitation_consumers.sh` | A | 8 passed, 0 failed. Extended first to the U questions (fixture 7 must fail, and does); then U3 was added alone and case 6 failed red -- `FAIL  U3 is asked but no template reads it` -- until the block template read it |
+| `tests/test_user_level_snippet.sh` | O | 35 passed, 0 failed (unchanged snippets; the block stays ASCII) |
+| `sh scripts/check-artifact.sh skills/workspace-workflow-builder` | A | PASS -- A2-A15 ok, A1 skipped (a skill has no `AGENTS.md`) |
+| Byte sizes | A | `references/user-level-files.md` 32,358 of 32,768 -- the next change to it needs a split first; `SKILL.md` 30,276 |
+| The block reads right in each runtime's file: no Claude-only setting stated for all, both fallback lines present, "Round" not "tier" | J | author's own context: complete |
+| An agent follows Decision Support on a real decision | J | not checked -- Known Limitations |
 
 ## Iteration Suggestions
 

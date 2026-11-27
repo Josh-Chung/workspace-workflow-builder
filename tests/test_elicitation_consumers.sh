@@ -13,6 +13,10 @@
 # its preset and pruning tables name every ID without reading any answer,
 # which is how B4 hid. A range such as "B0-B10" does not count either.
 #
+# The add-on questions (U1, U2, ...) live in references/user-level-files.md,
+# which both asks and reads them: there, a reader is any line outside that
+# module's "## Questions" section, or another reference file.
+#
 # Presence, not proof: a template can name B8 and still ignore an option.
 # Whether each option produces what it promises stays a J-check. The fixture
 # cases prove the check can say FAIL.
@@ -35,6 +39,27 @@ consumers() {
     n=0
     for f in "$dir"/*.md; do
       case " $BANKS " in *" ${f##*/} "*) continue ;; esac
+      grep -qE "(^|[^A-Za-z0-9-])$id([^A-Za-z0-9-]|\$)" "$f" && n=$((n + 1))
+    done
+    if [ "$n" -gt 0 ]; then echo "ok    $id read by $n file(s)"
+    else echo "FAIL  $id is asked but no template reads it"; bad=1; fi
+  done
+  return "$bad"
+}
+
+# u_consumers <dir>: the same check for the add-on questions in
+# user-level-files.md; the module's own Questions section does not count.
+u_consumers() {
+  dir=$1; mod="$dir/user-level-files.md"; bad=0
+  [ -f "$mod" ] || { echo "FAIL  no user-level-files.md in $dir"; return 1; }
+  rest="$W/u-rest.md"
+  tr -d '\r' < "$mod" | awk '/^## Questions/{q = 1; next} q && /^## /{q = 0} !q' > "$rest"
+  ids=$(tr -d '\r' < "$mod" | sed -n 's/^\*\*\(U[0-9][0-9]*\)\. .*/\1/p' | sort -u)
+  [ -n "$ids" ] || { echo "FAIL  no U question IDs found in $mod"; return 1; }
+  for id in $ids; do
+    n=0
+    for f in "$rest" "$dir"/*.md; do
+      case " user-level-files.md $BANKS " in *" ${f##*/} "*) continue ;; esac
       grep -qE "(^|[^A-Za-z0-9-])$id([^A-Za-z0-9-]|\$)" "$f" && n=$((n + 1))
     done
     if [ "$n" -gt 0 ]; then echo "ok    $id read by $n file(s)"
@@ -91,6 +116,26 @@ expect "4 every question read"         pass "ok    Z1-extra read by 1 file(s)" c
 # 5. a bank with no question IDs at all must not pass silently
 mkdir "$W/f5"; printf 'no questions here\n' > "$W/f5/elicitation-questions.md"
 expect "5 empty bank"                  fail "FAIL  no question IDs found" consumers "$W/f5"
+
+# 6. the shipped add-on module: every U question has a reader
+expect "6 shipped add-on questions"    pass "ok    U2 read by" u_consumers "$REF"
+
+# ufixture <name>: an add-on module asking U1 and U2; U1 is read below its
+# Questions section, U2 is named only inside it
+ufixture() {
+  mkdir "$W/$1"
+  printf '## Questions\r\n\r\n**U1. First**\r\n\r\n**U2. Second** *(ask only if U1 != A)*\r\n\r\n## Write\r\n\r\nEach U1 target.\r\n' \
+    > "$W/$1/user-level-files.md"
+}
+
+# 7. named only inside its own Questions section: still unread
+ufixture f7
+expect "7 own question text is no read" fail "FAIL  U2 is asked but no template reads it" u_consumers "$W/f7"
+
+# 8. U2 read by another reference file: pass
+ufixture f8
+printf '%s\n' '- Role: <U2 answer>' > "$W/f8/tpl.md"
+expect "8 every add-on question read"  pass "ok    U2 read by 1 file(s)" u_consumers "$W/f8"
 
 echo
 echo "$pass passed, $fail failed"

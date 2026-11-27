@@ -1,6 +1,6 @@
 ---
 id: user-level-files
-scope: "Opt-in user-level instruction files in the home folder (Claude, Codex, Gemini, or a runtime the user names): the U1/U2 questions, Mode C (Home only), verified load facts, the managed personal-defaults block, the Home-tier write procedure, the resolution and validation snippets, and edge cases"
+scope: "Opt-in user-level instruction files in the home folder (Claude, Codex, Gemini, or a runtime the user names): the U1-U3 questions (U3: decision support), Mode C (Home only), verified load facts, the managed personal-defaults block, the Home-tier write procedure, the resolution and validation snippets, and edge cases"
 read-when: "Phase 1 when the mode is C (Home only); Phase 3 right after B0; Phase 4 and Phase 5 Step 3b, only when U1 != A"
 depends-on: [elicitation-track-b]
 priority: P1
@@ -19,7 +19,7 @@ tags: [user-level, home-folder, personal-defaults, instruction-files, risk-tiers
 
 - Scope boundary
 - Verified load facts
-- U1 and U2 questions (Other runtimes included)
+- U1-U3 questions (Other runtimes included)
 - Mode C - Home only
 - Target resolution
 - Managed block template
@@ -128,6 +128,36 @@ cross-project habits. Run the scope test on each item before accepting it; an
 item that fails is offered to a project's files instead (in Mode C, to the
 user, since no project is open).
 
+**U3. Decision Support** *(ask only if U1 != A; default A)*
+
+> **重大决策前，要不要让智能体先听取第二意见？ / Should the agent get a second opinion before a consequential decision?**
+>
+> 只用于有长期代价的决策——架构、方案、难以撤销的权衡；事实问题、小偏好和有明显默认值的选择都不用。
+> *(Only for decisions with a lasting cost - architecture, approach, a trade-off that is hard to undo. Never for questions of fact, small preferences, or choices with an obvious default.)*
+>
+> A) **不需要 / No** *(default)*
+>
+> B) **盲审子智能体 / Blind sub-agent review** - 智能体先写下自己的选择，再请一个全新上下文、只读的子智能体在看不到这个选择的情况下独立选择。两者一致且判断明确就继续，并用一句话告诉你；否则把两种立场都交给你。
+> *(The agent writes down its own pick, then a read-only sub-agent with a fresh context chooses without seeing it. Same pick and a clear call: it goes ahead and tells you in one line. Otherwise both positions come to you.)*
+>
+> C) **B + 另一个模型家族 / B + a model from another family** - 两者不一致或难分高下时，你还多一个选项：让另一个模型（例如另一家公司的命令行工具）拿同一份盲审简报参与，智能体权衡后再推荐。
+> *(On a disagreement or a close call you also get the option to let another model - e.g. another vendor's CLI - weigh in with the same blind brief; the agent weighs both and recommends.)*
+>
+> D) **自定义 / Custom** - 描述你自己的规则。 *(Describe your own rule.)*
+
+After B, C or D, ask in **one** follow-up turn for:
+
+- **Reviewer settings** (optional): the model and reasoning effort for the
+  Round 1 sub-agent, per runtime and in that runtime's own terms (e.g.
+  "Claude Code: model opus, effort xhigh").
+- **C only - other models:** each model from another family and how the
+  agent reaches it (e.g. "Codex, through the cc-suite plugin"). With targets
+  in several families, name one outside each, so every runtime has another
+  family to ask.
+
+Both answers are user-stated: never suggest a route as working. D is composed
+from the user's words and still passes the scope test.
+
 ---
 
 ## Mode C - Home Only
@@ -140,7 +170,7 @@ No workspace file is created or changed.
 | 0 | Runs as usual; a missing git is no blocker (nothing here needs it) |
 | 1 | Mode C detected |
 | 2 | Skipped |
-| 3 | U1 (no option A) and U2 only - no preset, no Track A or B. Then confirm a short summary: each target with its path, and the U2 answers |
+| 3 | U1 (no option A), U2 and U3 only - no preset, no Track A or B. Then confirm a short summary: each target with its path, and the U2 and U3 answers |
 | 4 | Plan document with Category C alone; the same confirmation gate |
 | 5 | Step 3b alone. In a sandbox, the `.proposed.md` file goes in the current folder |
 | 6 | A later personal-defaults change is another Mode C run |
@@ -198,8 +228,9 @@ contradiction J-check must also read.
 
 The block is the only thing this skill ever writes into a user-level
 instruction file. Pure ASCII, written runtime-neutrally, and **identical in
-every target** when U1 selects more than one. Content comes from U2 answers
-only - fabrication prohibited; omit a section whose fields were left blank.
+every target** when U1 selects more than one. Content comes from U2 and U3
+answers only - fabrication prohibited; omit a section whose fields were left
+blank.
 
 ````markdown
 <!-- BEGIN workspace-workflow-builder: personal-defaults -->
@@ -218,12 +249,54 @@ instruction file says otherwise, follow the project file.
 [ONLY WHEN U2 = B]
 ### Cross-Project Habits
 - <one habit per bullet, as the user stated it>
+
+[ONLY WHEN U3 = B or C]
+### Decision Support
+- Before a consequential decision (architecture, approach, a trade-off with
+  lasting cost), get a second opinion. Skip it for questions of fact, small
+  preferences, and choices with an obvious default: asking on small choices
+  wastes time and teaches the user to ignore the offer when it matters.
+- Round 1, a blind sub-agent: state your own pick in one line first. Then
+  start a read-only sub-agent with a fresh context - never one that inherits
+  this conversation, which would carry your lean - on <U3 reviewer settings,
+  each naming its runtime, then "elsewhere,"> the strongest model and
+  reasoning effort you can choose. Give it a blind brief: the options, the
+  constraints, and where the evidence is - not your pick. Ask it to choose,
+  give the deciding reason, and rate the call clear or close.
+- Same pick, rated clear: go ahead, and tell the user in one line the pick,
+  the reason, and that a blind second opinion agreed. A hard-to-reverse
+  choice still goes to the user first.
+- Otherwise (different picks, or a close call): show the user both positions.
+- If you cannot start a fresh-context sub-agent, say so and bring the user
+  your pick and its deciding reason.
+[ONLY WHEN U3 = C]
+- Round 2, another model family: with both positions, also offer "Let
+  another model weigh in - deliberate, then recommend." If chosen, give the
+  same blind brief to one of these that is not your own family:
+  - <model>: <route> (one line per U3 answer)
+- Deliberate, do not defer: both reviewers can be wrong. Then go ahead with
+  the best combined option, or bring the user a sharper recommendation if it
+  is still close.
+- If none of them is outside your own family, or none can be reached from
+  here, do not offer Round 2: say so and show both positions.
+
+[ONLY WHEN U3 = D]
+### Decision Support
+- <the user's rule, one step per bullet, in their words>
 <!-- END workspace-workflow-builder: personal-defaults -->
 ````
 
 The precedence line is required: both files load together, and the runtime
 itself resolves a contradiction arbitrarily. Keep the block short - it is
 re-read on every turn of every project.
+
+Decision Support is written for every target at once, so nothing in it may
+assume one runtime. Reviewer settings name their runtime ("on model opus at
+effort xhigh in Claude Code; elsewhere, the strongest ..."); with none given,
+the line reads "on the strongest model and reasoning effort you can choose".
+The two fallback lines are required whenever their round is present: a
+runtime without sub-agents, or one whose own family is the only one listed,
+then says so instead of acting on a capability it lacks.
 
 ---
 
@@ -284,7 +357,9 @@ where the block is pasted above that heading), then run the validation snippet.
 | A | Two or more targets: every block identical (line endings aside) | Rewrite all from one composed block |
 | A | Codex: the user-level `AGENTS.md` plus the project's root `AGENTS.md` under 32,768 bytes. Mode C: the home file alone, with the bytes it leaves for project files reported | Warn; Edge Cases (combined size) |
 | A | Gemini: the target within 24,000 bytes, where Antigravity cuts a rule file | Warn; offer to trim the block, or name the user's own text as the bulk |
+| A | U3 != A: the block has one `### Decision Support` line; U3 = A: none | Recompose the block from the U3 answer |
 | J | Every block line passes the scope test | Move failing lines to the project's files |
+| J | Decision Support: every model, route and setting it names is a U3 answer, each setting names its runtime, and each round present keeps its fallback line | Recompose from the U3 answers; never fill a blank with a guess |
 | J | No block line contradicts the user's text outside the markers, the generated project file (Modes A and B), or a file `antigravity-also-loads:` named (Gemini) | Ask which wins; change only the block |
 | O | Claude Code: in a new session, `/context all` lists the user-level `CLAUDE.md` under "Memory files" - PASS only with that path quoted | BLOCKED (Requires User Verification) until the user reports it |
 | O | Codex: `codex --ask-for-approval never "Summarize the current instructions."` quotes the "Working language" line - PASS only with that line quoted. A model summary is weak evidence; `codex -c log_dir=./.codex-log` and `./.codex-log/codex-tui.log` are stronger | BLOCKED (Requires User Verification) until the user reports it |
@@ -403,6 +478,8 @@ wwb_file_cap() {
 | Marker state is not zero pairs or one ordered pair | Stop. Show each marker line with its line number and ask which block to keep. Never guess |
 | User's text outside the markers contradicts a block line | Show both lines; ask which wins; change only the block - text outside the markers is the user's |
 | A U2 item fails the scope test | Offer it to this project's files; never write it into the user-level file |
+| U3 != A, and a target runtime may have no sub-agents (an Other target, or the user is unsure) | Say so at U3: there, Round 1 falls back to the agent's pick and its deciding reason. Never state that a runtime has sub-agents |
+| U3 = C, and the only model listed shares a target's family (e.g. Codex listed, Codex a target) | Say so at U3 and offer to name one outside that family; otherwise that runtime skips Round 2, as the block's fallback line says |
 | A stated fact cannot be written in ASCII (e.g. a name in its own script) | Ask: transliterate, or keep it and record the ASCII check as FAILED (accepted by the user) - never PASS |
 | Codex combined size check warns | Offer two fixes: trim the block, or raise `project_doc_max_bytes` in the user's Codex `config.toml`. This skill does not edit `config.toml` itself |
 | Sandbox / CI | Never write the home folder; emit `user-level-personal-defaults.proposed.md` plus the next step (Write Procedure) |
